@@ -4,7 +4,11 @@ services:
     env: python
     plan: free
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python python_backend.py"
+    startCommand: "gunicorn --bind 0.0.0.0:$PORT python_backend:app"
     envVars:
       - key: PYTHON_VERSION
         value: 3.9
+      # Might want to add WEB_CONCURRENCY later for performance tuning
+      # - key: WEB_CONCURRENCY
+      #   value: 2 
+      # Example: Number of worker processes
