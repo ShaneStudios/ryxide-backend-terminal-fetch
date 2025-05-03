@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: ryxide-backend-terminal-fetch
+    env: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python python_backend.py"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9
