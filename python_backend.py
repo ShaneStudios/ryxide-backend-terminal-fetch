@@ -5,9 +5,13 @@ import shutil
 import zipfile
 import logging
 from flask import Flask, request, jsonify, send_file, abort, Response
+from flask_cors import CORS
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+allowed_origins = "*"
+CORS(app, resources={r"/fetch-and-zip": {"origins": allowed_origins}})
 
 TEMP_DIR_BASE = None
 ALLOWED_COMMANDS = {'git', 'wget'}
@@ -68,10 +72,13 @@ def add_log_headers(response, logs):
     for i, log_msg in enumerate(limited_logs):
         header_name = f"X-Log-Python-{i}"
         header_value = ''.join(c for c in log_msg if 31 < ord(c) < 127)
+        response.headers.add('Access-Control-Expose-Headers', header_name)
         response.headers.set(header_name, header_value[:200])
     return response
 
 @app.route('/')
+# @cross_origin(origins=allowed_origins) 
+# Alternative way for single routes
 def index():
     return jsonify({"message": "Python File Snatcher Backend is running"})
 
@@ -159,10 +166,10 @@ def fetch_and_zip():
                  resp.status_code = 400
                  return add_log_headers(resp, logs)
 
-             wget_command = ['wget', '-P', temp_dir, '-nv', url]
-             result = run_command(wget_command, execution_dir, logs)
+            wget_command = ['wget', '-P', temp_dir, '-nv', url]
+            result = run_command(wget_command, execution_dir, logs)
 
-             if result.returncode != 0:
+            if result.returncode != 0:
                  logs.append(f"ERROR: wget failed (Code: {result.returncode}). Stderr: {result.stderr.strip()}")
                  resp = jsonify({"error": f"wget failed. Stderr: {result.stderr.strip()}"})
                  resp.status_code = 500
@@ -191,6 +198,7 @@ def fetch_and_zip():
             as_attachment=True,
             download_name='downloaded_content.zip'
         )
+        response.headers.add('Access-Control-Expose-Headers', 'Content-Disposition')
         return add_log_headers(response, logs)
 
     except subprocess.TimeoutExpired:
