@@ -159,10 +159,10 @@ def fetch_and_zip():
                  resp.status_code = 400
                  return add_log_headers(resp, logs)
 
-            wget_command = ['wget', '-P', temp_dir, '-nv', url]
-            result = run_command(wget_command, execution_dir, logs)
+             wget_command = ['wget', '-P', temp_dir, '-nv', url]
+             result = run_command(wget_command, execution_dir, logs)
 
-            if result.returncode != 0:
+             if result.returncode != 0:
                  logs.append(f"ERROR: wget failed (Code: {result.returncode}). Stderr: {result.stderr.strip()}")
                  resp = jsonify({"error": f"wget failed. Stderr: {result.stderr.strip()}"})
                  resp.status_code = 500
